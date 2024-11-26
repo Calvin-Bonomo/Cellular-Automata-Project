@@ -16,6 +16,8 @@ class CellularAutomata:
     Array containing the simulation space.
   `convolution`: numpy.array(dtype=float32)
     The convolution to apply to each cell in the simulation.
+  `padding`: `int`
+    Padding added to the simulation space.
   
   Methods:
   ----------
@@ -35,7 +37,11 @@ class CellularAutomata:
     """
 
     # Require 2d convolution
-    assert len(convolution.shape) == 2 
+    assert len(convolution.shape) == 2
+    # Require square convolution
+    assert convolution.shape[0] == convolution.shape[1]
+    # Require convolution to be odd
+    assert convolution.shape[0] % 2 == 1
     # Require 2d simulation space
     assert len(dimension) == 2 
     # Require convolution to be smaller than simulation space
@@ -43,9 +49,9 @@ class CellularAutomata:
 
     (self.x, self.y) = dimension
     self.convolution = convolution
+    self.padding = (convolution.shape[0] - 1) / 2
     # Init grid with padding for the convolution's width and height
-    self.grid = np.zeros((self.x + (convolution.shape[0] - 1) / 2, \
-                           self.y + (convolution.shape[1] - 1) / 2))
+    self.grid = np.zeros((self.x + self.padding * 2, self.y + self.padding * 2))
   
   def set_cell(self, x, y, val):
     """
@@ -66,11 +72,36 @@ class CellularAutomata:
     # Check x, y in bounds
     assert x >= 0 and x < self.x and y >= 0 and y < self.y
 
-    self.grid[x + 1, y + 1] = val
+    self.grid[x + self.padding, y + self.padding] = val
 
   def tick_simulation(self):
     """
     Step the simulation forward by one tick by applying `convolution` at each cell.
     """
     
-    pass
+    write = np.zeros(self.grid.shape)
+    for i in range(self.padding, self.x + self.padding):
+      for j in range(self.padding, self.y + self.padding):
+        write[i, j] = self.__apply_convolution(i, j)
+    self.grid = write
+  
+  def __apply_convolution(self, x, y):
+    """
+    Returns the value of the convolution applied to the grid at (`x`, `y`).
+
+    ...
+
+    Parameters:
+    ----------
+    `x`: int
+      X-position to apply the convolution to.
+    `y`: int
+      Y-position to apply the convolution to.
+    """
+
+    res = 0
+
+    for i in range(-self.padding, self.padding + 1):
+      for j in range(-self.padding, self.padding + 1):
+        res += self.convolution[i + self.padding, j + self.padding] * self.grid[x + i, y + j]
+    return res
