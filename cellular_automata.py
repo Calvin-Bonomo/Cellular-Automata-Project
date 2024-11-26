@@ -34,9 +34,18 @@ class CellularAutomata:
       The convolution to apply to each cell in the simulation.
     """
 
+    # Require 2d convolution
+    assert len(convolution.shape) == 2 
+    # Require 2d simulation space
+    assert len(dimension) == 2 
+    # Require convolution to be smaller than simulation space
+    assert convolution.shape[0] < dimension[0] and convolution.shape[1] < dimension[1] 
+
     (self.x, self.y) = dimension
-    self.grid = np.zeros(dimension)
     self.convolution = convolution
+    # Init grid with padding for the convolution's width and height
+    self.grid = np.zeros((self.x + (convolution.shape[0] - 1) / 2, \
+                           self.y + (convolution.shape[1] - 1) / 2))
   
   def set_cell(self, x, y, val):
     """
@@ -54,10 +63,14 @@ class CellularAutomata:
       The new value of the specified cell.
     """
 
-    self.grid[x, y] = val
+    # Check x, y in bounds
+    assert x >= 0 and x < self.x and y >= 0 and y < self.y
+
+    self.grid[x + 1, y + 1] = val
 
   def tick_simulation(self):
     """
     Step the simulation forward by one tick by applying `convolution` at each cell.
     """
+    
     pass
