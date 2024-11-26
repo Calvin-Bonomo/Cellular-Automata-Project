@@ -53,7 +53,8 @@ class CellularAutomata:
     `val`: `int`
       The new value of the specified cell.
     """
-    pass
+
+    self.grid[x, y] = val
 
   def tick_simulation(self):
     """
