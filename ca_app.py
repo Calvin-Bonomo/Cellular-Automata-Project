@@ -1,26 +1,79 @@
+import sys
+from cellular_automata import CellularAutomata
 import numpy as np
 import pygame
 import pygame.surfarray
 
-# Setup
-pygame.init()
-screen = pygame.display.set_mode((512, 512))
-clock = pygame.time.Clock()
-running = True
+def run_sim(ca: CellularAutomata, screen_size: tuple[int, int]) -> None:
+  """
+  Contains the main loop for running the simulation.
 
-arr = np.zeros((512, 512))
+  ...
 
-# Main loop
-while running:
-  for event in pygame.event.get():
-    if event.type == pygame.QUIT:
-      running = False
-  # Logic here
-  surface = pygame.surfarray.make_surface(arr)
-  screen.blit(surface, (0, 0))
+  Parameters:
+  ca: CellularAutomata
+    The simulation controller.
+  screen_size: tuple[int, int]
+    2-tuple containing the size of the pygame window.
+  """
 
-  pygame.display.flip()
+  pygame.init()
+  screen = pygame.display.set_mode(screen_size)
+  clock = pygame.time.Clock()
+  running = True
+  paused = False
 
-  clock.tick()
+  while running:
+    (running, paused) = handle_pygame_events(ca)
+    if not paused:
+      ca.tick_sim()
+    surface = pygame.surfarray.make_surface(ca.grid)
+    screen.blit(surface, (0, 0))
+    pygame.display.flip()
+    clock.tick()
+  pygame.quit()
+
+def handle_pygame_events(ca: CellularAutomata) -> tuple[bool, bool]:
+  """
+  Handler for all pygame events. To be called each tick
+
+  ...
+
+  Parameters:
+  ----------
+  ca: CellularAutomata
+    The simulation controller.
+
+  Returns:
+  ----------
+  tuple[bool, bool]
+    The running state and paused state respectively.
+  """
+  pass
+
+def read_settings(filename: str) -> CellularAutomata:
+  """
+  Read simulation settings from a file.
+
+  ...
+
+  Parameters:
+  ----------
+  filename: str
+    The name of the file where the settings are stored.
+  
+  Returns:
+  ----------
+  CellularAutomata
+    The simulation controller class.
+  """
+  pass
 
 pygame.quit()
+
+if __name__ == "__main__":
+  if len(sys.argv) != 2:
+    print(f"{sys.argv[0]} <sim settings filename>")
+    exit(0)
+  simulator = read_settings(sys.argv[1])
+  run_sim(simulator, (512, 512))
